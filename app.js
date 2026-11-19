@@ -424,13 +424,19 @@ function homeCountry(p) {
 
 // Bearing sampling, selectable (2026-09-03): 0.25° (1,440 bearings, ~40 ms a pick on a phone)
 // or 0.1° (3,600 bearings, ~100 ms). Finer steps catch narrower distant targets at
-// proportionally more compute; below 0.1° the ~10 km index raster becomes the binding
-// constraint, not the sampling. Persisted as nl-step, carried in links as &step=. The Records
-// and the daily puzzle are pinned to 0.25° (see the jump handler / dailyAnswer).
+// proportionally more compute. On the sphere neighbouring bearings are R·sin(d/R)·step apart
+// at distance d: widest a quarter of the way round (~28 km at 0.25°, ~11 km at 0.1°), about
+// 20 km at both 5,000 and 15,000 km, and back to nothing at the antipode. So below 0.1° the
+// ~10 km index raster becomes the binding constraint, not the sampling. Persisted as nl-step,
+// carried in links as &step=. The Records and the daily puzzle are pinned to 0.25° (see the
+// jump handler / dailyAnswer).
 const STEPS = [0.25, 0.1];
 let STEP = 0.25;
+// A shared view's settings: ?at=… is the normal form; #at=… is what Share writes for a view
+// picked from the device's own location (a fragment never reaches the server - see shareView).
+const linkParams = () => new URLSearchParams(/^#at=/.test(location.hash) ? location.hash.slice(1) : location.search);
 try { const s = parseFloat(localStorage.getItem('nl-step')); if (STEPS.includes(s)) STEP = s; } catch (e) { /* ignore */ }
-{ const s = parseFloat(new URLSearchParams(location.search).get('step')); if (STEPS.includes(s)) STEP = s; }
+{ const s = parseFloat(linkParams().get('step')); if (STEPS.includes(s)) STEP = s; }
 // Mode: 'coast' snaps to the water's edge and walks to the first land (blank where land is in
 // view); 'any' starts from the exact point, on land or sea, and walks to the first land that is
 // not the country you are standing in.
@@ -438,7 +444,7 @@ try { const s = parseFloat(localStorage.getItem('nl-step')); if (STEPS.includes(
 const MODES = ['coast', 'any', 'land'];
 let MODE = 'coast';
 try { const m = localStorage.getItem('nl-mode'); if (MODES.includes(m)) MODE = m; } catch (e) { /* ignore */ }
-{ const m = new URLSearchParams(location.search).get('mode'); if (MODES.includes(m)) MODE = m; }
+{ const m = linkParams().get('mode'); if (MODES.includes(m)) MODE = m; }
 const runWidth = (run) => run.count * STEP;                       // degrees
 const fmtDeg = (d) => `${Number.isInteger(d) ? d : +d.toFixed(2)}°`;
 
@@ -788,14 +794,30 @@ async function applyLayer(onPct, signal) {
 const layerSel = $('#layer');
 // The shareable URL: the picked point plus any non-default mode and map layer.
 let lastAt = null;
+let lastAtCoarse = null;    // the same point to 0.1° (about 11 km): all that leaves the page from a GPS pick
 let lastWeatherName = '';   // "Country (33.87°S, 151.21°E)" for the weathermodels.app link
+const urlExtras = () => `${MODE !== 'coast' ? `&mode=${MODE}` : ''}${STEP !== 0.25 ? `&step=${STEP}` : ''}${LAYER !== DEFAULT_LAYER ? `&layer=${LAYER}` : ''}`;
 function writeUrl() {
   if (!lastAt) return;
-  history.replaceState(null, '', `?at=${lastAt}${MODE !== 'coast' ? `&mode=${MODE}` : ''}${STEP !== 0.25 ? `&step=${STEP}` : ''}${LAYER !== DEFAULT_LAYER ? `&layer=${LAYER}` : ''}`);
-  // the picked point's forecast on weathermodels.app (same ?at=lat,lon convention)
+  // A pick from the device's own location (Request Location in Anywhere / Over land, and any
+  // re-pick of it after a mode, detail or map change) stays out of the address bar: a reload
+  // would send it to the server, and history and copied links would keep it. Share offers the
+  // rounded area instead (shareView). A view opened from such a #at= link keeps that form.
+  const src = lastPick && lastPick.src;
+  if (src === 'gps') history.replaceState(null, '', location.pathname);
+  else if (src === 'frag') history.replaceState(null, '', `${location.pathname}#at=${lastAt}${urlExtras()}`);
+  else history.replaceState(null, '', `?at=${lastAt}${urlExtras()}`);
+  // The picked point's forecast on weathermodels.app, a separate site (same ?at=lat,lon
+  // convention). The link carries the point, so from a GPS pick it carries only the area.
   const wl = $('#weatherLink');
   // tmp=1: weathermodels.app shows the place without adding it to its recent-places tabs
-  if (wl) { wl.href = `https://weathermodels.app/?at=${lastAt}&n=${encodeURIComponent(lastWeatherName)}&tmp=1`; wl.hidden = false; }
+  if (wl) {
+    wl.href = `https://weathermodels.app/?at=${src === 'gps' ? lastAtCoarse : lastAt}&n=${encodeURIComponent(lastWeatherName)}&tmp=1`;
+    wl.title = src === 'gps'
+      ? 'Opens weathermodels.app, a separate site, with your area rounded to about 10 km'
+      : 'Opens weathermodels.app, a separate site, with this point\'s coordinates';
+    wl.hidden = false;
+  }
 }
 const layerStatus = $('#layerStatus');
 function setLayer(layer) {
@@ -827,7 +849,7 @@ layerSel.addEventListener('change', () => setLayer(layerSel.value));
 // political by omitting it; they now open on satellite - cosmetic only. Standalone launches
 // ignore the URL entirely - pickFromUrl strips it - so leave their saved layer alone.)
 {
-  const q = new URLSearchParams(location.search);
+  const q = linkParams();
   const standaloneLaunch = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!standaloneLaunch) {
     const l = q.get('layer');
@@ -1057,6 +1079,7 @@ function clearPick() {
   $('#viewLink').disabled = true;
   const wl = $('#weatherLink');
   if (wl) wl.hidden = true;
+  $('#viewLink').textContent = 'Share this view';
   $('#viewLink').title = 'Pick a point first';
   $('#viewLinkStatus').textContent = '';
 }
@@ -1233,7 +1256,9 @@ function drawLegend(res) {
 }
 
 let lastPick = null;
-function pick(lat, lon) {
+// src: undefined for an ordinary pick, 'gps' for the device's own location (kept out of the
+// address bar), 'frag' for a view opened from a shared #at= link (kept in the fragment).
+function pick(lat, lon, src) {
   const t0 = performance.now();
   const res = analyze(lat, lon);
   if (!res) { noCoast(); return null; }
@@ -1247,7 +1272,7 @@ function pick(lat, lon) {
   drawChart(res);
   drawLegend(res);
   const open = res.view.filter((v) => v).length * res.step;
-  lastPick = { lat, lon };
+  lastPick = { lat, lon, src };
   const place = $('#place');
   place.replaceChildren();
   const nm = document.createElement('p'); nm.className = 'name';
@@ -1257,15 +1282,19 @@ function pick(lat, lon) {
       ? (res.home ? `${names[res.home]} - ${fmtDeg(open)} reaches another country over land` : 'At sea - nothing to reach over land')
       : `${names[res.home]} - ${fmtDeg(open)} of open water`;
   const co = document.createElement('p'); co.className = 'coords';
-  const coordsText = `${Math.abs(res.at.lat).toFixed(2)}°${res.at.lat >= 0 ? 'N' : 'S'}, ${Math.abs(res.at.lon).toFixed(2)}°${res.at.lon >= 0 ? 'E' : 'W'}`;
+  const fmtLL = (p, dp) => `${Math.abs(p.lat).toFixed(dp)}°${p.lat >= 0 ? 'N' : 'S'}, ${Math.abs(p.lon).toFixed(dp)}°${p.lon >= 0 ? 'E' : 'W'}`;
+  const coordsText = fmtLL(res.at, 2);
   co.textContent = `${coordsText} · computed in ${Math.round(performance.now() - t0)} ms`;
-  lastWeatherName = `${res.home ? names[res.home] : 'At sea'} (${coordsText})`;
+  const gps = src === 'gps';
+  lastWeatherName = `${res.home ? names[res.home] : 'At sea'} (${gps ? `near ${fmtLL(res.at, 1)}` : coordsText})`;
   place.append(nm, co);
   $('#viewLink').disabled = false;
-  $('#viewLink').title = 'Copy or share a link to this view';
+  $('#viewLink').textContent = gps ? 'Share this area' : 'Share this view';
+  $('#viewLink').title = gps ? 'Shares your area, rounded to about 10 km - not your exact position' : 'Copy or share a link to this view';
   $('#viewLinkStatus').textContent = '';
-  // The address bar always holds a link to exactly this view.
+  // The address bar holds a link to exactly this view - except for a GPS pick (see writeUrl).
   lastAt = `${res.at.lat.toFixed(3)},${res.at.lon.toFixed(3)}`;
+  lastAtCoarse = `${res.at.lat.toFixed(1)},${res.at.lon.toFixed(1)}`;
   writeUrl();
   // Phones (feedback 2026-09-09): scrolling the panel over the globe on every pick made
   // re-picking miserable. A pick now just refreshes the bottom peek bar; the full results
@@ -1317,20 +1346,26 @@ function flyTo(lat, lon) {
 }
 
 async function shareView() {
-  const url = location.href;
+  // From the device's own location, share only the area - rounded to 0.1°, about 11 km - and
+  // in the fragment (#at=), which browsers never send to the server, even when it is opened.
+  const gps = !!(lastPick && lastPick.src === 'gps');
+  const url = gps ? `${location.origin}${location.pathname}#at=${lastAtCoarse}${urlExtras()}` : location.href;
   const status = $('#viewLinkStatus');
   const title = document.title;
   const text = ($('#place .name') || {}).textContent || "What's Across";
+  const flash = (msg) => {
+    status.textContent = msg;
+    setTimeout(() => { if (status.textContent === msg) status.textContent = ''; }, gps ? 4000 : 2500);
+  };
   if (navigator.share) {
-    try { await navigator.share({ title, text, url }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    try { await navigator.share({ title, text, url }); if (gps) flash('Shared your area, rounded to about 10 km'); return; } catch (e) { if (e.name === 'AbortError') return; }
   }
   try {
     await navigator.clipboard.writeText(url);
-    status.textContent = 'Link copied';
+    flash(gps ? 'Link copied - your area, rounded to about 10 km' : 'Link copied');
   } catch (e) {
     status.textContent = url;
   }
-  setTimeout(() => { if (status.textContent === 'Link copied') status.textContent = ''; }, 2500);
 }
 
 // A shared link (?at=lat,lon) reopens the same view.
@@ -1338,8 +1373,9 @@ function pickFromUrl() {
   // An installed app launches with whatever URL was on screen when it was added — replaying a
   // pick every launch (and scrolling to it) is not what anyone wants, so standalone ignores ?at.
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (standalone) { if (location.search) history.replaceState(null, '', location.pathname); return false; }
-  const q = new URLSearchParams(location.search);
+  if (standalone) { if (location.search || location.hash) history.replaceState(null, '', location.pathname); return false; }
+  const frag = /^#at=/.test(location.hash);
+  const q = linkParams();
   const urlMode = MODES.includes(q.get('mode')) ? q.get('mode') : null;
   const sv = parseFloat(q.get('step'));
   const urlStep = STEPS.includes(sv) ? sv : null;
@@ -1352,7 +1388,7 @@ function pickFromUrl() {
   if (!m) return false;
   const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
   if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return false;
-  pick(lat, lon);
+  pick(lat, lon, frag ? 'frag' : undefined);
   flyTo(lat, lon);
   return true;
 }
@@ -1378,13 +1414,13 @@ function setMode(mode) {
 // behind follows (same as the main selector), and the compass re-reads the new analysis.
 compassModeSel.addEventListener('change', () => {
   setMode(compassModeSel.value);
-  if (lastPick) pick(lastPick.lat, lastPick.lon);
+  if (lastPick) pick(lastPick.lat, lastPick.lon, lastPick.src);
   if (compassAnalyse()) startHeading();   // no-op if already listening
   if (compass.heading !== null) updateCompass();
 });
 modeSel.addEventListener('change', () => {
   setMode(modeSel.value);
-  if (lastPick) pick(lastPick.lat, lastPick.lon);
+  if (lastPick) pick(lastPick.lat, lastPick.lon, lastPick.src);
 });
 
 const stepSel = $('#step');
@@ -1400,7 +1436,7 @@ function setStep(step) {
 }
 stepSel.addEventListener('change', () => {
   setStep(parseFloat(stepSel.value));
-  if (lastPick) pick(lastPick.lat, lastPick.lon);
+  if (lastPick) pick(lastPick.lat, lastPick.lon, lastPick.src);
 });
 
 $('#jump').addEventListener('change', (e) => {
@@ -1461,7 +1497,8 @@ function requestGps(fly, coarse) {
       showGps(pos.coords.latitude, pos.coords.longitude);
       if (fly) flyTo(pos.coords.latitude, pos.coords.longitude);
       // In Anywhere / Over-land mode the user's own position is a valid pick: pin it straight away.
-      if (fly && MODE !== 'coast') pick(pos.coords.latitude, pos.coords.longitude);
+      // Marked 'gps', so it never reaches the address bar (see writeUrl).
+      if (fly && MODE !== 'coast') pick(pos.coords.latitude, pos.coords.longitude, 'gps');
     },
     (err) => {
       const code = err && err.code;
@@ -1675,6 +1712,10 @@ if (LAYER !== 'political') {
 await progress(100, 'Ready');
 $('#loading').hidden = true;
 pickFromUrl();
+// A #at= link opened in a tab already showing the page changes only the fragment: no reload.
+window.addEventListener('hashchange', () => {
+  if (/^#at=/.test(location.hash) && !document.body.classList.contains('puzzle-open')) pickFromUrl();
+});
 
 // PWA: offline cache + installability (sw.js). Registered only where service workers exist;
 // localhost is allowed for testing.

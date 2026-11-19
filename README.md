@@ -20,7 +20,11 @@ Free, runs entirely in your browser, no account, no adverts.
   named.
 - Country names on the globe, decluttered by zoom; crisp vector coastlines at any zoom.
 - **Share this view** — every pick puts `?at=lat,lon` in the address bar; the Share button uses
-  the native share sheet where available, otherwise copies the link.
+  the native share sheet where available, otherwise copies the link. The exception is a pick from
+  your device location (Anywhere / Over land): it is never written to the address bar, and
+  **Share this area** sends only the area, rounded to 0.1° (about 11 km), as `#at=lat,lon` - a
+  fragment, which browsers never send to the server. "Weather here" opens weathermodels.app, a
+  separate site, with the point (or, from your device location, the rounded area).
 - **Three modes** — *Coast* (default) snaps to the water's edge and follows each direction across
   the sea; *Anywhere* starts from the exact point, on land or at sea, and follows each direction
   to the first land that isn't the country you're in (from Berlin, east is Poland at 80 km);
@@ -47,8 +51,11 @@ All client-side, no backend:
 2. The clicked point snaps to the nearest water cell touching land.
 3. Each bearing is walked along its great circle (3 km steps near the shore, 8 km beyond) until
    the first land cell — a full circle if needed. Land within 20 km counts as "land in view".
-   Bearings are sampled every 0.25° (1,440 of them), so a distant island narrower than ~1/230 of
-   its distance can fall between two bearings.
+   Bearings are sampled every 0.25° (1,440 of them). On a sphere neighbouring bearings are
+   R·sin(d/R)·0.25° apart at distance d - about 20 km at 5,000 km, at most 28 km a quarter of
+   the way round, about 20 km again at 15,000 km and closing to nothing at the antipode - so a
+   distant island narrower than that can fall between two bearings. At 0.1° the gap is at most
+   ~11 km, about one raster cell, so the ~10 km grid is then the limit rather than the sampling.
 4. The globe is [three.js](https://threejs.org/) (vendored in `lib/`): an 8192-wide texture where
    the GPU allows, coastlines and borders as line geometry, HTML labels projected per frame.
 

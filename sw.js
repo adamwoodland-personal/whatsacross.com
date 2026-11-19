@@ -4,7 +4,7 @@
 //    dataset and three.js are precached so the whole globe works offline once loaded.
 //  - Images: CACHE-FIRST.
 //  - Bump CACHE on deploys that change any precached file.
-const CACHE = 'wa-v8';
+const CACHE = 'wa-v9';
 const CORE = [
 	'/',
 	'/index.html',
