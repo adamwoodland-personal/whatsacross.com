@@ -23,5 +23,6 @@ Technical: static site, three.js, MIT licensed, installable PWA that works offli
 - [orrery.live](https://orrery.live/): interactive 3D solar system by the same author
 - [weathermodels.app](https://weathermodels.app/): the "Weather here" button opens the forecast for the picked point on that separate site (nine models compared); from the device's own location it passes only the area, rounded to about 10 km
 - [Scan the Horizon](https://scanthehorizon.app/): names the hills, mountains, towns and islands on your horizon, with their distances, by the same author
+- [Look Up and Down](https://lookupanddown.com/): point a phone down to see straight through the Earth to the other side of the world (the antipode), or up for the sky, from the same country data, by the same author
 - [Adam's Arcade](https://games.adamwoodland.com/): all of the author's free browser games and tools
 - [Adam Woodland](https://adamwoodland.com/): the author, an OT/ICS cybersecurity consultant; this site is a side project
