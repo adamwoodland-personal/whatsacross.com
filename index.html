@@ -20,7 +20,7 @@
   <meta property="og:locale"      content="en_GB" />
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="What's across the ocean from you? Every direction, any coastline" />
-  <meta name="twitter:description" content="Click a coastline on a 3D globe." />
+  <meta name="twitter:description" content="Click a coastline on a 3D globe. Every direction over the sea is followed along a great circle to its first landfall - and the answers are not what you'd guess." />
   <meta name="twitter:image"       content="https://whatsacross.com/og-image.png" />
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -43,7 +43,10 @@
     "browserRequirements": "Requires JavaScript and WebGL",
     "inLanguage": "en-GB",
     "isAccessibleForFree": true,
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" }
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+"image": "https://whatsacross.com/og-image.png",
+"screenshot": "https://whatsacross.com/img/whats-across-lands-end.jpg",
+"author": { "@type": "Person", "name": "Adam Woodland", "url": "https://adamwoodland.com/" }
   }
   </script>
   <script type="application/ld+json">
@@ -56,15 +59,15 @@
         "name": "What is directly across the ocean from me?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Pick your own stretch of coast on the globe - or press Request Location on a phone - and every one of the 360 directions out to sea is followed to the country it reaches. On a phone you can then hold the device up and read off whatever lies across the water in the direction you are facing. The answers for New York, Miami, Lisbon, Cape Town, Sydney and 32 other well-known coastlines are listed at https://whatsacross.com/across/."
+          "text": "Pick your own stretch of coast on the globe - or press Request Location on a phone - and every one of the 360 directions out to sea is followed to the country it reaches. On a phone you can then hold the device up and read off whatever lies across the water in the direction you are facing. The answers for New York, Miami, Lisbon, Cape Town, Sydney and 32 other well-known coastlines are listed on what's directly across the ocean."
         }
       },
       {
         "@type": "Question",
-        "name": "Is “across the ocean” not just due east or west?",
+        "name": "Is \"across the ocean\" not just due east or west?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No, and that is the whole point. Sailing a constant compass bearing is not the shortest path across a sphere; a great circle is. Follow one properly and the answers stop being obvious: Land's End in England faces Brazil, Perth in Australia faces Africa, and a beach in New York faces Australia."
+          "text": "No, and that is the whole point. Sailing a constant compass bearing is not the shortest path across a sphere; a great circle is. Follow one properly and the answers stop being obvious: Land's End in England faces Brazil, Perth in Australia faces Africa, and a beach in New York faces Australia. Maps that answer with \"due east\" give a different, and less truthful, answer."
         }
       },
       {
@@ -72,7 +75,7 @@
         "name": "What is an antipode, and where is mine?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Your antipode is the point on the exact opposite side of the Earth - dig straight down and you would surface there. Every pick marks and names its antipode on the globe. Bearings that run past it keep going until they hit land."
+          "text": "Your antipode is the point on the exact opposite side of the Earth - dig straight down and you would surface there. Every pick marks and names its antipode on the globe. Bearings that run past it keep going until they hit land, which is why a single direction can cross an entire ocean and arrive somewhere unexpected. For famous antipodes and why most of them are ocean, see Look Up and Down's antipodes guide."
         }
       },
       {
@@ -80,7 +83,7 @@
         "name": "How accurate is it?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Close enough to trust for the shape of the answer, not for navigation. The analysis grid is roughly 10 km and directions are sampled every quarter degree, so very small islands and very narrow straits can be missed or merged."
+          "text": "Close enough to trust for the shape of the answer, not for navigation. The analysis grid is roughly 10 km and directions are sampled every quarter degree (or every tenth, on the Detail setting), so very small islands and very narrow straits can be missed or merged - see the note above for the full caveats."
         }
       },
       {
@@ -88,7 +91,7 @@
         "name": "Where does the map data come from?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Country outlines and the Terrain map are Natural Earth 1:10m (public domain); the Satellite map is NASA Blue Marble (public domain). Everything is computed in your browser."
+          "text": "Country outlines and the Terrain map are Natural Earth 1:10m (public domain); the Satellite map is NASA Blue Marble (public domain). Everything is computed in your browser from those outlines - there is no server doing the work."
         }
       },
       {
@@ -180,7 +183,7 @@
         <option value="">Jump to a place…</option>
         <optgroup label="Sea records (Coast mode)">
           <option value="-9.097,-157.983,coast,0.1">Most countries in sea view - Penrhyn, Cook Islands (58)</option>
-          <option value="25.444,66.489,coast,0.1">Longest sea voyage - Pakistan → Kamchatka, 32,098 km</option>
+          <option value="25.53,66.31,coast,0.1">Longest sea voyage - Pakistan → Kamchatka, about 32,000 km</option>
           <option value="78.179,11.997,coast,0.1">Widest sea view - Svalbard, 340.9° of water</option>
           <option value="-71.235,170.288,coast,0.25">Cape Adare, Antarctica - 330° of water</option>
           <option value="64.116,-77.739,coast,0.1">Furthest by sea - Hudson Strait, Canada (Australia, 24,010 km)</option>
@@ -256,7 +259,7 @@
       <h3>Is "across the ocean" not just due east or west?</h3>
       <p>No, and that is the whole point. Sailing a constant compass bearing is not the shortest path across a sphere; a great circle is. Follow one properly and the answers stop being obvious: Land's End in England faces Brazil, Perth in Australia faces Africa, and a beach in New York faces Australia. Maps that answer with "due east" give a different, and less truthful, answer.</p>
       <h3>What is an antipode, and where is mine?</h3>
-      <p>Your antipode is the point on the exact opposite side of the Earth - dig straight down and you would surface there. Every pick marks and names its antipode on the globe. Bearings that run past it keep going until they hit land, which is why a single direction can cross an entire ocean and arrive somewhere unexpected.</p>
+      <p>Your antipode is the point on the exact opposite side of the Earth - dig straight down and you would surface there. Every pick marks and names its antipode on the globe. Bearings that run past it keep going until they hit land, which is why a single direction can cross an entire ocean and arrive somewhere unexpected. For famous antipodes and why most of them are ocean, see <a href="https://lookupanddown.com/antipodes/">Look Up and Down's antipodes guide</a>.</p>
       <h3>How accurate is it?</h3>
       <p>Close enough to trust for the shape of the answer, not for navigation. The analysis grid is roughly 10 km and directions are sampled every quarter degree (or every tenth, on the Detail setting), so very small islands and very narrow straits can be missed or merged - see the note above for the full caveats.</p>
       <h3>Where does the map data come from?</h3>

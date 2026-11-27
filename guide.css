@@ -68,3 +68,10 @@ tbody th { font-weight: 600; }
 footer.site { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+/* Region rows in the at-a-glance table, and the screenshot figure (SEO batch 1, 2026-11-27) */
+tr.group th { padding-top: 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--line); }
+figure.shot { margin: 18px auto 22px; max-width: 520px; }
+figure.shot img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
+figure.shot figcaption { margin-top: 8px; font-size: 14px; color: var(--muted); text-align: center; }
+/* 24 px tap targets: the table's place links and the 404 page's link list */
+table.stack tbody th a, ul.links a { display: inline-block; padding: 3px 0; }

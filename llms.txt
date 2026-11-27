@@ -15,7 +15,7 @@ Technical: static site, three.js, MIT licensed, installable PWA that works offli
 ## Links
 
 - [Globe](https://whatsacross.com/): the app
-- [What's directly across the ocean](https://whatsacross.com/across/): static answers for 37 well-known coastlines (New York, Ocean City, Miami, San Francisco, Lisbon, Land's End, Cape Town, Mumbai, Tokyo, Sydney, Perth and more) - due north/east/south/west, the widest parts of each sea view, the furthest country and each place's antipode, computed with the globe's own engine, plus the sea and land records
+- [What's directly across the ocean](https://whatsacross.com/across/): static answers for 53 well-known coastlines, grouped by region (Boston, New York, Atlantic City, Ocean City, the Outer Banks, Charleston, Cocoa Beach, Miami, San Francisco, Honolulu, Cape Horn, Lisbon, Land's End, Newcastle, Cape Town, Mumbai, Tokyo, Sydney, Brisbane, Perth and more) - due north/east/south/west, the widest parts of each sea view, the furthest country and each place's antipode, computed with the globe's own engine, plus the sea and land records
 - [Shared view](https://whatsacross.com/?at=50.14,-5.41): `?at=lat,lon` opens the page with that coastline already picked (this example is Land's End); `#at=lat,lon` works too. A view picked from the device's own location is never written to the address bar, and sharing it gives only the area, rounded to about 10 km, in a `#at=` fragment
 
 ## Related

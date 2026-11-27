@@ -66,6 +66,8 @@ Installable PWA (`manifest.json`, `sw.js`): the dataset and code are precached, 
 offline once loaded. Hosted as static files on S3 behind CloudFront with a strict
 Content-Security-Policy (`script-src 'self'`).
 
+The guide at `across/index.html` ("What's directly across the ocean", 53 coastlines grouped by region) is generated from the real engine by the scripts in the author's working folder; it and `404.html` share `guide.css`, and `img/` holds real screenshots of the globe.
+
 ## Licence
 
 MIT for this project's own code — see [LICENSE](LICENSE). Bundled: three.js (MIT),
